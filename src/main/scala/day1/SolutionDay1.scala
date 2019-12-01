@@ -26,6 +26,9 @@ object SolutionDay1 extends App {
       .takeUntil(_.isEmpty)
       .map(_.toLong)
 
+  def decodeLines(path:String): ZStream[Any, IOException, Long] =
+    ZStream.managed(inputStreamFromFile(path)).flatMap(linesFrom)
+
   def calculateFuelFromMass(mass: Long): Long =
     (mass / 3L) - 2L
 
@@ -33,19 +36,14 @@ object SolutionDay1 extends App {
     if (calculateFuelFromMass(fuel) <= 0) fuel
     else calculateFuelForFuel(calculateFuelFromMass(fuel)) + fuel
 
-  def partOne(input: InputStream): ZIO[Any, IOException, Long] =
-    linesFrom(input).map(calculateFuelFromMass).fold(0L)(_ + _)
+  val partOne: ZIO[Any, IOException, Long] =
+    decodeLines("day1/input-day1.txt").map(calculateFuelFromMass).fold(0L)(_ + _)
 
-  def partTwo(input: InputStream): ZIO[Any, IOException, Long] =
-    linesFrom(input).map(calculateFuelFromMass _ andThen calculateFuelForFuel).fold(0L)(_ + _)
+  val partTwo: ZIO[Any, IOException, Long] =
+    decodeLines("day1/input-day1.txt").map(calculateFuelFromMass _ andThen calculateFuelForFuel).fold(0L)(_ + _)
 
   override def run(args: List[String]): ZIO[zio.ZEnv, Nothing, Int] =
-    inputStreamFromFile("day1/input-day1.txt")
-      .use(is => if (args.isEmpty) partOne(is) else partTwo(is))
-      .foldM(
-        ex => console.putStrLn(s"That didn't work, because $ex"),
-        res => console.putStrLn(s"Total fuel is $res")
-      )
-      .as(0)
+    ((if(args.isEmpty) partOne else partTwo) >>= ((r:Long) => console.putStrLn(s"res = $r"))).orDie.as(0)
+
 
 }
