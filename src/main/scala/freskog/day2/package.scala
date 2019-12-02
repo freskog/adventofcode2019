@@ -11,6 +11,6 @@ package object day2 extends Computer.Service[Computer] with Memory.Service[Memor
   override def read(p: Position): ZIO[Memory, Nothing, Int] =
     ZIO.accessM[Memory](_.memory.read(p))
 
-  override def asList: ZIO[Memory, Nothing, List[Int]] =
-    ZIO.accessM[Memory](_.memory.asList)
+  override def dump: ZIO[Memory, Nothing, List[Int]] =
+    ZIO.accessM[Memory](_.memory.dump)
 }

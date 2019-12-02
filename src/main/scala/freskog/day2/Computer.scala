@@ -54,7 +54,7 @@ object Computer {
 
       override def interpreter(pos: Position): ZIO[Any, Nothing, List[Int]] =
         decodeInstruction(pos).flatMap {
-          case End  => memory.asList
+          case End  => memory.dump
           case inst => executeInstruction(inst) *> calculateNextPosition(pos, inst) >>= interpreter
         }
     }

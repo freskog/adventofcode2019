@@ -13,7 +13,7 @@ object Memory {
 
     def read(p: Position): ZIO[R, Nothing, Int]
 
-    def asList: ZIO[R, Nothing, List[Int]]
+    def dump: ZIO[R, Nothing, List[Int]]
   }
 
   trait Live extends Memory {
@@ -27,7 +27,7 @@ object Memory {
       override def read(p: Position): ZIO[Any, Nothing, Int] =
         ZIO.effectTotal(input(p.i))
 
-      override def asList: ZIO[Any, Nothing, List[Int]] =
+      override def dump: ZIO[Any, Nothing, List[Int]] =
         ZIO.effectTotal(input.toList)
     }
   }
