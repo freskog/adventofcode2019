@@ -1,6 +1,5 @@
 package freskog.day2
 
-import freskog.day2.SolutionDay2.{Position, interpreter, memory, asList}
 import freskog.day2.TestUtilsDay2._
 import zio.ZIO
 import zio.test._
@@ -17,7 +16,7 @@ object SolutionDay2Spec extends DefaultRunnableSpec(
 
 object TestUtilsDay2 {
   def hasExpectedValueAtPosZero(input:List[Int], expected:List[Int]): ZIO[Any, Nothing, TestResult] = {
-    val result = (interpreter(Position(0)) *> asList).provideM(memory(input.toArray))
+    val result = interpreter(Position(0)).provideM(SolutionDay2.env(input.toArray))
     assertM(result, Assertion.hasSameElements(expected))
   }
 
