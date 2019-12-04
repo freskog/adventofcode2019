@@ -1,7 +1,7 @@
-import java.io.{ IOException, InputStream }
+import java.io.{IOException, InputStream}
 
-import zio.{ Managed, UIO, ZIO }
-import zio.stream.{ ZSink, ZStream }
+import zio.{Managed, UIO, ZIO, stream}
+import zio.stream.{ZSink, ZStream}
 
 package object freskog {
 
@@ -31,6 +31,10 @@ package object freskog {
       .takeUntil(_.isEmpty)
       .map(_.toInt)
 
+
+  def splitCommasWithMultipleLines(inputStream: InputStream): ZStream[Any, IOException, List[String]] =
+    decodeAsString(inputStream).aggregate(ZSink.splitLines).flatMap(ZStream.fromChunk).map(_.split(",").toList)
+
   def decodeLines(path: String): ZStream[Any, IOException, Long] =
     ZStream.managed(inputStreamFromFile(path)).flatMap(linesFrom)
 
@@ -39,5 +43,8 @@ package object freskog {
 
   def decodeCommaSeparatedAsArray(path: String): ZIO[Any, IOException, Array[Int]] =
     decodeCommaSeparated(path).runCollect.map(_.toArray)
+
+  def decodeCommaSeparatedOnMultipleLines(path:String): ZIO[Any, IOException, List[List[String]]] =
+    ZStream.managed(inputStreamFromFile(path)).flatMap(splitCommasWithMultipleLines).runCollect
 
 }
