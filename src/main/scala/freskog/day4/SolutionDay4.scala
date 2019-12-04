@@ -11,21 +11,24 @@ object SolutionDay4 extends App {
   def greaterThan[_: P](n: Int): P[Int]   = P(number.filter(_ > n))
   def greaterOrEqTo[_: P](n: Int): P[Int] = P(number.filter(_ >= n))
 
+  def digitWithNoRepetition[_: P](n: Int): P[Int] =
+    P(equalTo(n) ~ &(!equalTo(n) | End))
+
   def digitRepeatedExactly2[_: P](n: Int): P[Int] =
-    P(greaterThan(n).flatMapX(n => equalTo(n) ~ &(!equalTo(n) | End)))
+    P(greaterThan(n) flatMapX digitWithNoRepetition)
 
   def digitRepeatedAtLeast2[_: P](n: Int): P[Int] =
-    P(greaterThan(n).flatMapX(n => equalTo(n)))
+    P(greaterThan(n) flatMapX equalTo)
 
   def zeroOrMoreNonDecreasing[_: P](n: Int): P[Int] =
-    P(greaterOrEqTo(n).flatMapX(zeroOrMoreNonDecreasing) | greaterOrEqTo(n) ~ End | End ~ Pass(n))
+    P((greaterOrEqTo(n) flatMapX zeroOrMoreNonDecreasing) | greaterOrEqTo(n) ~ End | End ~ Pass(n))
 
   def partOneParser[_: P](n: Int): P[Int] =
-    P(greaterOrEqTo(n).flatMapX(partOneParser) | digitRepeatedAtLeast2(n).flatMapX(zeroOrMoreNonDecreasing))
+    P((greaterOrEqTo(n) flatMapX partOneParser) | (digitRepeatedAtLeast2(n) flatMapX zeroOrMoreNonDecreasing))
 
   def partTwoParser[_: P](n: Int): P[Int] =
-    P(greaterOrEqTo(n).flatMapX(partTwoParser) | digitRepeatedExactly2(n).flatMapX(zeroOrMoreNonDecreasing))
-  
+    P((greaterOrEqTo(n) flatMapX partTwoParser) | (digitRepeatedExactly2(n) flatMapX zeroOrMoreNonDecreasing))
+
   val partOne: ZIO[Console, Nothing, Unit] =
     console
       .putStrLn(s"""${Iterator
