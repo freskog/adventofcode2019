@@ -1,6 +1,6 @@
 package freskog.day5
 
-import zio.{ Ref, UIO, ZIO }
+import zio.{ Ref, ZIO }
 
 trait Computer {
   val computer: Computer.Service[Any]
@@ -25,10 +25,13 @@ object Computer {
       def setJumpPosition(i: Int): ZIO[Any, Nothing, Unit] =
         nextPosition.set(Option(Position(i)))
 
-      def calculateNextPosition(position: Position, inst: Instruction): UIO[Position] =
+      def clearJumpPosition: ZIO[Any, Nothing, Unit] =
+        nextPosition.set(None)
+
+      def calculateNextPosition(position: Position, inst: Instruction): ZIO[Any, Nothing, Position] =
         nextPosition.get.flatMap {
           case None    => ZIO.succeed(position.skipN(inst.size))
-          case Some(p) => nextPosition.set(None) *> ZIO.succeed(p)
+          case Some(p) =>  clearJumpPosition *> ZIO.succeed(p)
         }
 
       def resolve(p: Param): ZIO[Any, Nothing, Int] =
