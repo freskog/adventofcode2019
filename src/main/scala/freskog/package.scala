@@ -17,12 +17,12 @@ package object freskog {
   def decodeAsString(inputStream: InputStream): ZStream[Any, IOException, String] =
     ZStream.fromInputStream(inputStream).chunks.aggregate(ZSink.utf8DecodeChunk)
 
-  def linesFrom(inputStream: InputStream): ZStream[Any, IOException, Long] =
+  def linesFrom(inputStream: InputStream): ZStream[Any, IOException, String] =
     decodeAsString(inputStream)
       .aggregate(ZSink.splitLines)
       .mapConcatChunk(identity)
       .takeUntil(_.isEmpty)
-      .map(_.toLong)
+
 
   def splitByCommas(inputStream: InputStream): ZStream[Any, IOException, Int] =
     decodeAsString(inputStream)
@@ -35,7 +35,7 @@ package object freskog {
   def splitCommasWithMultipleLines(inputStream: InputStream): ZStream[Any, IOException, List[String]] =
     decodeAsString(inputStream).aggregate(ZSink.splitLines).flatMap(ZStream.fromChunk).map(_.split(",").toList)
 
-  def decodeLines(path: String): ZStream[Any, IOException, Long] =
+  def decodeLines(path: String): ZStream[Any, IOException, String] =
     ZStream.managed(inputStreamFromFile(path)).flatMap(linesFrom)
 
   def decodeCommaSeparated(path: String): ZStream[Any, IOException, Int] =
