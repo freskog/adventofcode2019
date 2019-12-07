@@ -1,4 +1,4 @@
-package freskog.day5
+package freskog.day7
 
 import zio.ZIO
 
@@ -67,7 +67,7 @@ object InstructionDecoder {
     P(parse3(m1, m2) map EqualTo.tupled)
 
   def end[_: P]: P[Instruction] =
-    P(Pass(freskog.day5.End))
+    P(Pass(freskog.day7.End))
 
   def instruction[_: P]: P[Instruction] =
     P((singleDigit ~ singleDigit ~ singleDigit ~ singleDigit ~ singleDigit ~ sep.?).flatMapX {

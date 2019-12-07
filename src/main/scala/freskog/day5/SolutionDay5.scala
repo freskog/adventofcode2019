@@ -22,14 +22,14 @@ object SolutionDay5 extends App {
         override val nextPosition: Ref[Option[Position]] = posRef
       }
 
-  def run(program: Array[Int], input: List[Int]): ZIO[Any, Nothing, List[Int]] =
+  def runProgram(program: Array[Int], input: List[Int]): ZIO[Any, Nothing, List[Int]] =
     ZIO.accessM[Computer](_.computer.interpreter(Position(0))).provideM(env(program, input))
 
   val partOne: ZIO[Console, Nothing, Unit] =
-    initialMemory >>= (run(_, List(1)).map(_.mkString(","))) >>= console.putStrLn
+    initialMemory >>= (runProgram(_, List(1)).map(_.mkString(","))) >>= console.putStrLn
 
   val partTwo: ZIO[Console, Nothing, Unit] =
-    initialMemory >>= (run(_,List(5)).flatMap ( code => console.putStrLn(s"Diagnostic code is ${code.head}")))
+    initialMemory >>= (runProgram(_,List(5)).flatMap (code => console.putStrLn(s"Diagnostic code is ${code.head}")))
 
   override def run(args: List[String]): ZIO[zio.ZEnv, Nothing, Int] =
     (partOne *> partTwo).as(0)
