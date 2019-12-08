@@ -7,9 +7,7 @@ import zio.stream.ZStream
 
 object SolutionDay7 extends App {
 
-  def env(initial: Array[Int],
-          in: Queue[Int],
-          out: Queue[Int]): UIO[Computer with Memory with InstructionDecoder with IO] =
+  def intCode(initial: Array[Int], in: Queue[Int], out: Queue[Int]): UIO[Computer] =
     for {
       outRef <- Ref.make(List.empty[Int])
       posRef <- Ref.make(Option.empty[Position])
@@ -23,7 +21,7 @@ object SolutionDay7 extends App {
       }
 
   def runProgram(program: Array[Int], in: Queue[Int], out: Queue[Int]): ZIO[Any, Nothing, List[Int]] =
-    ZIO.accessM[Computer](_.computer.interpreter(Position(0))).provideM(env(program, in, out))
+    ZIO.accessM[Computer](_.computer.interpreter(Position(0))).provideM(intCode(program, in, out))
 
   def phases(start: Int, end: Int): ZStream[Any, Nothing, (Int, Int, Int, Int, Int)] =
     ZStream.fromIterator(ZIO.effectTotal((start to end).permutations.map(_.toList).map {
@@ -31,8 +29,7 @@ object SolutionDay7 extends App {
     }))
 
   def amplifierControllerSoftware(in: Queue[Int], out: Queue[Int]): ZIO[Any, Nothing, Fiber[Nothing, Int]] =
-    decodeCommaSeparatedAsArray("freskog/day7/input-day7.txt").orDie >>=
-      (runProgram(_, in, out).map(_.head).fork)
+    decodeCommaSeparatedAsArray("freskog/day7/input-day7.txt").orDie >>= (runProgram(_, in, out).map(_.head).fork)
 
   def computeOutput(p1: Int, p2: Int, p3: Int, p4: Int, p5: Int): ZIO[Any, Nothing, ((Int, Int, Int, Int, Int), Int)] =
     for {
