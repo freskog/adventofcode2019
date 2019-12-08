@@ -31,7 +31,7 @@ object Computer {
       def calculateNextPosition(position: Position, inst: Instruction): ZIO[Any, Nothing, Position] =
         nextPosition.get.flatMap {
           case None    => ZIO.succeed(position.skipN(inst.size))
-          case Some(p) =>  clearJumpPosition *> ZIO.succeed(p)
+          case Some(p) => clearJumpPosition *> ZIO.succeed(p)
         }
 
       def resolve(p: Param): ZIO[Any, Nothing, Int] =

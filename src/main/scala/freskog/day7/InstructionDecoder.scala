@@ -33,7 +33,7 @@ object InstructionDecoder {
     mode match {
       case 0 => addr
       case 1 => value
-      case badMode => Fail
+      case _ => Fail
     }
 
   def sep[_: P]: P[Unit] =
@@ -71,15 +71,15 @@ object InstructionDecoder {
 
   def instruction[_: P]: P[Instruction] =
     P((singleDigit ~ singleDigit ~ singleDigit ~ singleDigit ~ singleDigit ~ sep.?).flatMapX {
-      case (_, m2, m1, _, 1) => add(m1, m2)
-      case (_, m2, m1, _, 2) => mul(m1, m2)
-      case (_, _, _, _, 3)   => read
-      case (_, _, m1, _, 4)  => write(m1)
-      case (_, m2, m1, _, 5) => jumpIfTrue(m1, m2)
-      case (_, m2, m1, _, 6) => jumpIfFalse(m1, m2)
-      case (_, m2, m1, _, 7) => lessThan(m1, m2)
-      case (_, m2, m1, _, 8) => equalTo(m1, m2)
-      case (_, _, _, 9, 9)   => end
+      case (_, b, a, _, 1) => add(a, b)
+      case (_, b, a, _, 2) => mul(a, b)
+      case (_, _, _, _, 3) => read
+      case (_, _, a, _, 4) => write(a)
+      case (_, b, a, _, 5) => jumpIfTrue(a, b)
+      case (_, b, a, _, 6) => jumpIfFalse(a, b)
+      case (_, b, a, _, 7) => lessThan(a, b)
+      case (_, b, a, _, 8) => equalTo(a, b)
+      case (_, _, _, 9, 9) => end
     })
 
   def formatCell(i: Int): String =
