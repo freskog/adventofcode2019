@@ -3,7 +3,6 @@ package freskog.day9
 import freskog.decodeCommaSeparatedAsMap
 import zio.{ IO => _, _ }
 import zio.console.Console
-import zio.stream.ZStream
 
 object SolutionDay9 extends App {
 
@@ -26,23 +25,16 @@ object SolutionDay9 extends App {
   def runProgram(program: Map[BigInt, BigInt], in: Queue[BigInt], out: Queue[BigInt]): ZIO[Any, Nothing, List[BigInt]] =
     ZIO.accessM[Computer](_.computer.interpreter(Position(0))).provideM(intCode(program, in, out))
 
-  def phases(start: BigInt, end: BigInt): ZStream[Any, Nothing, (BigInt, BigInt, BigInt, BigInt, BigInt)] =
-    ZStream.fromIterator(ZIO.effectTotal((start to end).permutations.map(_.toList).map {
-      case p1 :: p2 :: p3 :: p4 :: p5 :: Nil => (p1, p2, p3, p4, p5)
-    }))
-
-  def amplifierControllerSoftware(in: Queue[BigInt], out: Queue[BigInt]): ZIO[Any, Nothing, List[BigInt]] =
-    in.offer(BigInt(2)) *>
-      decodeCommaSeparatedAsMap("freskog/day9/input-day9.txt").orDie >>= (runProgram(_, in, out))
-
-  val partOne: ZIO[Console, Nothing, Unit] =
-    (Queue.unbounded[BigInt] zip Queue.unbounded[BigInt]).flatMap {
-      case (in, out) => amplifierControllerSoftware(in, out).flatMap(n => console.putStrLn(s"res is $n"))
-    }
-
-  val partTwo: ZIO[Console, Nothing, Unit] =
-    ZIO.unit
+  def amplifierControllerSoftware(mode: BigInt): ZIO[Console, Nothing, Unit] =
+    for {
+      in      <- Queue.unbounded[BigInt]
+      out     <- Queue.unbounded[BigInt]
+      _       <- in.offer(mode)
+      program <- decodeCommaSeparatedAsMap("freskog/day9/input-day9.txt").orDie
+      output  <- runProgram(program, in, out)
+      _       <- console.putStrLn(s"Mode = $mode, output = [${output.mkString(",")}]")
+    } yield ()
 
   override def run(args: List[String]): ZIO[zio.ZEnv, Nothing, Int] =
-    (partOne *> partTwo).as(0)
+    (amplifierControllerSoftware(1) *> amplifierControllerSoftware(2)).as(0)
 }
