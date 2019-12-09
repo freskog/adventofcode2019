@@ -56,16 +56,16 @@ object Computer {
 
       def executeInstruction(instruction: Instruction): ZIO[Any, Nothing, Unit] =
         instruction match {
-          case Add(p1, p2, dst)      => add(p1, p2, dst)
-          case Mul(p1, p2, dst)      => mul(p1, p2, dst)
-          case Write(p)              => resolveValue(p) >>= io.write
-          case Read(dst)             => read(dst)
-          case SetRelBase(base)      => setRelBase(base)
-          case JumpIfTrue(src, dst)  => jumpIfTrue(src, dst)
-          case JumpIfFalse(src, dst) => jumpIfFalse(src, dst)
-          case LessThan(p1, p2, dst) => lessThan(p1, p2, dst)
-          case EqualTo(p1, p2, dst)  => equalTo(p1, p2, dst)
-          case End                   => end
+          case Add(src1, src2, dst)      => add(src1, src2, dst)
+          case Mul(src1, src2, dst)      => mul(src1, src2, dst)
+          case Write(value)              => write(value)
+          case Read(dst)                 => read(dst)
+          case SetRelBase(base)          => setRelBase(base)
+          case JumpIfTrue(src, dst)      => jumpIfTrue(src, dst)
+          case JumpIfFalse(src, dst)     => jumpIfFalse(src, dst)
+          case LessThan(src1, src2, dst) => lessThan(src1, src2, dst)
+          case EqualTo(src1, src2, dst)  => equalTo(src1, src2, dst)
+          case End                       => end
         }
 
       def lessThan(p1: Param, p2: Param, dst: PosParam): ZIO[Any, Nothing, Unit] =
@@ -82,6 +82,9 @@ object Computer {
         (resolveValue(p1) zipWith resolveValue(p2))(_ * _).flatMap { res =>
           resolvePos(dst).flatMap(p => memory.write(p)(res))
         }
+
+      def write(p: Param): ZIO[Any, Nothing, Unit] =
+        resolveValue(p) >>= io.write
 
       def read(dst: PosParam): ZIO[Any, Nothing, Unit] =
         resolvePos(dst) >>= io.read
