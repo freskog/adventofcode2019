@@ -31,7 +31,7 @@ object InstructionDecoder {
   def value[_: P]: P[Value] =
     P(number map Value)
 
-  def rel[_ : P]: P[Rel] =
+  def rel[_: P]: P[Rel] =
     P(number map Rel)
 
   def param[_: P](mode: Int): P[Param] =
@@ -52,20 +52,20 @@ object InstructionDecoder {
   def sep[_: P]: P[Unit] =
     P(CharPred(_ == ','))
 
-  def parse3[_: P](m1: Int, m2: Int, m3:Int): P[(Param, Param, PosParam)] =
+  def parse3[_: P](m1: Int, m2: Int, m3: Int): P[(Param, Param, PosParam)] =
     P(param(m1) ~ sep ~ param(m2) ~ sep ~ posParam(m3))
 
-  def add[_: P](m1: Int, m2: Int, m3:Int): P[Add] =
+  def add[_: P](m1: Int, m2: Int, m3: Int): P[Add] =
     P(parse3(m1, m2, m3) map Add.tupled)
 
-  def mul[_: P](m1: Int, m2: Int, m3:Int): P[Mul] =
+  def mul[_: P](m1: Int, m2: Int, m3: Int): P[Mul] =
     P(parse3(m1, m2, m3) map Mul.tupled)
 
-  def setRelBase[_ : P](m:Int): P[SetRelBase] =
+  def setRelBase[_: P](m: Int): P[SetRelBase] =
     P(param(m) map SetRelBase)
 
-  def read[_: P](m:Int): P[Read] =
-    P( posParam(m) map Read)
+  def read[_: P](m: Int): P[Read] =
+    P(posParam(m) map Read)
 
   def write[_: P](m: Int): P[Write] =
     P(param(m) map Write)
@@ -76,10 +76,10 @@ object InstructionDecoder {
   def jumpIfFalse[_: P](m1: Int, m2: Int): P[JumpIfFalse] =
     P(param(m1) ~ sep ~ param(m2) map JumpIfFalse.tupled)
 
-  def lessThan[_: P](m1: Int, m2: Int, m3:Int): P[LessThan] =
+  def lessThan[_: P](m1: Int, m2: Int, m3: Int): P[LessThan] =
     P(parse3(m1, m2, m3) map LessThan.tupled)
 
-  def equalTo[_: P](m1: Int, m2: Int, m3:Int): P[EqualTo] =
+  def equalTo[_: P](m1: Int, m2: Int, m3: Int): P[EqualTo] =
     P(parse3(m1, m2, m3) map EqualTo.tupled)
 
   def end[_: P]: P[Instruction] =
