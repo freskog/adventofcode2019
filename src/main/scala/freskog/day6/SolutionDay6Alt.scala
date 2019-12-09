@@ -29,18 +29,18 @@ object SolutionDay6Alt extends App {
   def calculateAllOrbits(orbits: Map[String, List[String]]): String => (Int, Int) =
     scheme.hylo(allOrbits, buildOrbits(orbits))
 
-  case class Accum(dist: Int, seenSan: Boolean, seenMe: Boolean)
+  case class Accum(dist: Int, seenSa: Boolean, seenMe: Boolean)
 
   val distFromSantaToMe: Algebra[NodeF, Accum] =
     Algebra {
       case NodeF("SAN", lst) => if (lst.exists(_.seenMe)) lst(lst.indexWhere(_.seenMe)) else Accum(-1, true, false)
-      case NodeF("YOU", lst) => if (lst.exists(_.seenSan)) lst(lst.indexWhere(_.seenSan)) else Accum(-1, false, true)
+      case NodeF("YOU", lst) => if (lst.exists(_.seenSa)) lst(lst.indexWhere(_.seenSa)) else Accum(-1, false, true)
       case NodeF(_, lst) =>
-        (lst.indexWhere(_.seenSan), lst.indexWhere(_.seenMe)) match {
+        (lst.indexWhere(_.seenSa), lst.indexWhere(_.seenMe)) match {
           case (-1, -1)         => Accum(0, false, false)
           case (-1, n)          => Accum(1 + lst(n).dist, false, true)
           case (n, -1)          => Accum(1 + lst(n).dist, true, false)
-          case (n, m) if n == m => lst(n)
+          case (n, m) if n == m => Accum(0 + lst(n).dist, true, true)
           case (n, m)           => Accum(2 + lst(n).dist + lst(m).dist, true, true)
         }
 

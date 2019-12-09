@@ -24,12 +24,11 @@ package object freskog {
       .takeUntil(_.isEmpty)
 
 
-  def splitByCommas(inputStream: InputStream): ZStream[Any, IOException, Int] =
+  def splitByCommas(inputStream: InputStream): ZStream[Any, IOException, String] =
     decodeAsString(inputStream)
       .aggregate(ZSink.splitOn(","))
       .mapConcatChunk(identity)
       .takeUntil(_.isEmpty)
-      .map(_.toInt)
 
 
   def splitCommasWithMultipleLines(inputStream: InputStream): ZStream[Any, IOException, List[String]] =
@@ -38,11 +37,18 @@ package object freskog {
   def decodeLines(path: String): ZStream[Any, IOException, String] =
     ZStream.managed(inputStreamFromFile(path)).flatMap(linesFrom)
 
-  def decodeCommaSeparated(path: String): ZStream[Any, IOException, Int] =
+  def decodeCommaSeparated(path: String): ZStream[Any, IOException, String] =
     ZStream.managed(inputStreamFromFile(path)).flatMap(splitByCommas)
 
   def decodeCommaSeparatedAsArray(path: String): ZIO[Any, IOException, Array[Int]] =
-    decodeCommaSeparated(path).runCollect.map(_.toArray)
+    decodeCommaSeparated(path).map(_.toInt).runCollect.map(_.toArray)
+
+  def decodeCommaSeparatedAsMap(path:String): ZIO[Any, IOException, Map[BigInt, BigInt]] =
+    decodeCommaSeparated(path).map(BigInt(_)).runCollect.map(
+      _.zipWithIndex.foldLeft(Map.empty[BigInt,BigInt]) {
+        case (acc, (v,idx)) => acc.updated(BigInt(idx), v)
+      }
+    )
 
   def decodeCommaSeparatedOnMultipleLines(path:String): ZIO[Any, IOException, List[List[String]]] =
     ZStream.managed(inputStreamFromFile(path)).flatMap(splitCommasWithMultipleLines).runCollect
