@@ -15,16 +15,16 @@ sealed abstract class Instruction extends Product with Serializable {
   }
 }
 
-case class Add(src1: Param, src2: Param, dest: Param)      extends Instruction
-case class Mul(src1: Param, src2: Param, dest: Param)      extends Instruction
-case class Read(dest: Param)                               extends Instruction
-case class Write(dest: Param)                              extends Instruction
-case class SetRelBase(base: Param)                         extends Instruction
-case class JumpIfTrue(src: Param, dest: Param)             extends Instruction
-case class JumpIfFalse(src: Param, dest: Param)            extends Instruction
-case class LessThan(src1: Param, src2: Param, dest: Param) extends Instruction
-case class EqualTo(src1: Param, src2: Param, dest: Param)  extends Instruction
-case object End                                            extends Instruction
+case class Add(src1: Param, src2: Param, dest: PosParam)      extends Instruction
+case class Mul(src1: Param, src2: Param, dest: PosParam)      extends Instruction
+case class Read(dest: PosParam)                               extends Instruction
+case class Write(value: Param)                                extends Instruction
+case class SetRelBase(base: Param)                            extends Instruction
+case class JumpIfTrue(src: Param, dest: Param)                extends Instruction
+case class JumpIfFalse(src: Param, dest: Param)               extends Instruction
+case class LessThan(src1: Param, src2: Param, dest: PosParam) extends Instruction
+case class EqualTo(src1: Param, src2: Param, dest: PosParam)  extends Instruction
+case object End                                               extends Instruction
 
 object Instruction {
   val longest: Int = 4

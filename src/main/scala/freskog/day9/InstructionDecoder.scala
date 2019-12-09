@@ -42,11 +42,18 @@ object InstructionDecoder {
       case _ => Fail
     }
 
+  def posParam[_: P](mode: Int): P[PosParam] =
+    mode match {
+      case 0 => addr
+      case 2 => rel
+      case _ => Fail
+    }
+
   def sep[_: P]: P[Unit] =
     P(CharPred(_ == ','))
 
-  def parse3[_: P](m1: Int, m2: Int, m3:Int): P[(Param, Param, Param)] =
-    P(param(m1) ~ sep ~ param(m2) ~ sep ~ param(m3))
+  def parse3[_: P](m1: Int, m2: Int, m3:Int): P[(Param, Param, PosParam)] =
+    P(param(m1) ~ sep ~ param(m2) ~ sep ~ posParam(m3))
 
   def add[_: P](m1: Int, m2: Int, m3:Int): P[Add] =
     P(parse3(m1, m2, m3) map Add.tupled)
@@ -58,7 +65,7 @@ object InstructionDecoder {
     P(param(m) map SetRelBase)
 
   def read[_: P](m:Int): P[Read] =
-    P( param(m) map Read)
+    P( posParam(m) map Read)
 
   def write[_: P](m: Int): P[Write] =
     P(param(m) map Write)

@@ -1,6 +1,6 @@
 package freskog.day9
 
-import zio.{ Ref, ZIO }
+import zio.{ Ref, UIO, ZIO }
 
 trait Computer {
   val computer: Computer.Service[Any]
@@ -48,11 +48,10 @@ object Computer {
           case Rel(v)   => getRelPos(v) >>= memory.read
         }
 
-      def resolvePos(p: Param): ZIO[Any, Nothing, Position] =
+      def resolvePos(p: PosParam): ZIO[Any, Nothing, Position] =
         p match {
-          case Value(v) => ZIO.dieMessage(s"Attempted to resolve pos, but given value ($v)")
-          case Addr(a)  => ZIO.succeed(a)
-          case Rel(v)   => getRelPos(v)
+          case Addr(a) => ZIO.succeed(a)
+          case Rel(v)  => getRelPos(v)
         }
 
       def executeInstruction(instruction: Instruction): ZIO[Any, Nothing, Unit] =
@@ -69,30 +68,30 @@ object Computer {
           case End                   => end
         }
 
-      def lessThan(p1: Param, p2: Param, dst: Param): ZIO[Any, Nothing, Unit] =
-        (resolveValue(p1) zipWith resolveValue(p2))(_ < _).flatMap {
-          bool => resolvePos(dst).flatMap(p => memory.writeBool(p)(bool))
+      def lessThan(p1: Param, p2: Param, dst: PosParam): ZIO[Any, Nothing, Unit] =
+        (resolveValue(p1) zipWith resolveValue(p2))(_ < _).flatMap { bool =>
+          resolvePos(dst).flatMap(p => memory.writeBool(p)(bool))
         }
 
-      def add(p1: Param, p2: Param, dst: Param): ZIO[Any, Nothing, Unit] =
-        (resolveValue(p1) zipWith resolveValue(p2))(_ + _).flatMap {
-          res => resolvePos(dst).flatMap(p => memory.write(p)(res))
+      def add(p1: Param, p2: Param, dst: PosParam): ZIO[Any, Nothing, Unit] =
+        (resolveValue(p1) zipWith resolveValue(p2))(_ + _).flatMap { res =>
+          resolvePos(dst).flatMap(p => memory.write(p)(res))
         }
 
-      def mul(p1: Param, p2: Param, dst: Param): ZIO[Any, Nothing, Unit] =
-        (resolveValue(p1) zipWith resolveValue(p2))(_ * _).flatMap {
-          res => resolvePos(dst).flatMap(p => memory.write(p)(res))
+      def mul(p1: Param, p2: Param, dst: PosParam): ZIO[Any, Nothing, Unit] =
+        (resolveValue(p1) zipWith resolveValue(p2))(_ * _).flatMap { res =>
+          resolvePos(dst).flatMap(p => memory.write(p)(res))
         }
 
-      def read(dst: Param): ZIO[Any, Nothing, Unit] =
+      def read(dst: PosParam): ZIO[Any, Nothing, Unit] =
         resolvePos(dst) >>= io.read
 
       def setRelBase(base: Param): ZIO[Any, Nothing, Unit] =
         resolveValue(base) >>= updateRelBase
 
-      def equalTo(p1: Param, p2: Param, dst: Param): ZIO[Any, Nothing, Unit] =
-        (resolveValue(p1) zipWith resolveValue(p2))(_ == _).flatMap {
-          bool => resolvePos(dst).flatMap(p => memory.writeBool(p)(bool))
+      def equalTo(p1: Param, p2: Param, dst: PosParam): ZIO[Any, Nothing, Unit] =
+        (resolveValue(p1) zipWith resolveValue(p2))(_ == _).flatMap { bool =>
+          resolvePos(dst).flatMap(p => memory.writeBool(p)(bool))
         }
 
       def jumpIfFalse(src: Param, dst: Param): ZIO[Any, Nothing, Unit] =
@@ -100,6 +99,9 @@ object Computer {
 
       def jumpIfTrue(src: Param, dst: Param): ZIO[Any, Nothing, Unit] =
         ZIO.whenM(resolveValue(src).map(_ != BigInt(0)))(resolveValue(dst) >>= setJumpPosition)
+
+      def end: UIO[Unit] =
+        ZIO.succeed(())
 
       override def interpreter(pos: Position): ZIO[Any, Nothing, List[BigInt]] =
         instructionDecoder.decodeAt(pos).flatMap {
@@ -109,6 +111,4 @@ object Computer {
     }
   }
 
-  private def end =
-    ZIO.succeed(())
 }
