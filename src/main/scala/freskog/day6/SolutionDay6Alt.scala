@@ -43,7 +43,6 @@ object SolutionDay6Alt extends App {
           case (n, m) if n == m => Accum(0 + lst(n).dist, true, true)
           case (n, m)           => Accum(2 + lst(n).dist + lst(m).dist, true, true)
         }
-
     }
 
   def calculateDistBetweenSantaAndMe(orbits: Map[String, List[String]]): String => Accum =

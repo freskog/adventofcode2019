@@ -1,6 +1,6 @@
 import java.io.{IOException, InputStream}
 
-import zio.{Managed, UIO, ZIO, stream}
+import zio.{Managed, UIO, ZIO, ZManaged, stream}
 import zio.stream.{ZSink, ZStream}
 
 package object freskog {
@@ -50,7 +50,13 @@ package object freskog {
       }
     )
 
+  def decodeAsRawString(path:String):ZIO[Any, IOException, String] =
+    ZStream.managed(inputStreamFromFile(path)).flatMap(decodeAsString).fold("")(_ ++ _)
+
   def decodeCommaSeparatedOnMultipleLines(path:String): ZIO[Any, IOException, List[List[String]]] =
     ZStream.managed(inputStreamFromFile(path)).flatMap(splitCommasWithMultipleLines).runCollect
+
+  def mergeInto[A,B](m:Map[A,List[B]], k:A, v:B):Map[A,List[B]] =
+    m.updated(k, v :: m.getOrElse(k, Nil))
 
 }

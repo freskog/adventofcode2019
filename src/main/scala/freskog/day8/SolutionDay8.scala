@@ -7,7 +7,7 @@ import zio.console.Console
 object SolutionDay8 extends App {
 
   final case class Pixel(n: Int) extends AnyVal {
-    override def toString: String = if (n == 1) "*" else " "
+    override def toString: String = if (n == 1) "\u2588" else " "
   }
 
   final case class Layer(data: Vector[Vector[Pixel]]) {
