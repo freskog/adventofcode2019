@@ -3,6 +3,8 @@ package freskog.day16
 import zio._
 import zio.console.Console
 
+import scala.annotation.tailrec
+
 object SolutionDay16 extends App {
 
   val pattern: Chunk[Int] =
@@ -33,13 +35,39 @@ object SolutionDay16 extends App {
     (0 until phases).foldLeft(input) { case (input, _) => nextPhase(patterns, input) }
   }
 
+  @tailrec
+  def runPhaseSlice(input:Array[Int], phase:Int):Array[Int] =
+    if(phase == 0) input else {
+    ((input.length-1) to 0 by -1).foldLeft(0) {
+      case (acc, n) =>
+        val sum = acc + input(n)
+        input(n) = sum % 10 ; sum
+    }
+    runPhaseSlice(input, phase-1)
+  }
+
+  def strToArray(str: String):Array[Int] =
+    str.toCharArray.map(c => c.toString.toInt)
+
   val partOne: ZIO[Console, Nothing, Unit] =
     freskog
-      .decodeAsRawString("freskog/day16/input-day16.txt").map(_.toCharArray.map(c => c.toString.toInt))
+      .decodeAsRawString("freskog/day16/input-day16.txt").map(strToArray)
       .orDie
       .map(runPhases(_, 100))
-      .flatMap(res => console.putStrLn(s"FFT after 100 phases is ${res.take(8).mkString("")}"))
+      .flatMap(res => console.putStrLn(s"part one FFT after 100 phases is ${res.take(8).mkString("")}"))
+
+
+  val partTwo: ZIO[Console, Nothing, Unit] =
+    freskog.decodeAsRawString("freskog/day16/input-day16.txt").orDie
+    .map(s => s * 10000).map { s =>
+      val offset = s.take(7).toInt
+      val data = strToArray(s.substring(offset))
+      runPhaseSlice(data, 100)
+    }.flatMap(
+      res => console.putStrLn(s"part two code is ${res.slice(0, 8).mkString("")}")
+    )
+
 
   override def run(args: List[String]): ZIO[zio.ZEnv, Nothing, Int] =
-    partOne.as(0)
+    (partOne *> partTwo).as(0)
 }
