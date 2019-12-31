@@ -33,7 +33,7 @@ object SolutionDay19 extends App {
       p <- freskog.decodeCommaSeparatedAsMap("freskog/day19/input-day19.txt").orDie
       r <- runProgram(p, x, y)
     } yield r.head.toInt
-  
+
   def findStartRow(row: Int, m: Map[Int, Range]): ZIO[Any, Nothing, Map[Int, Range]] =
     ZIO.foreach(0 to 49)(inTractorBeam(_, row)).flatMap { res =>
       res.count(_ == 1) match {
